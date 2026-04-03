@@ -280,16 +280,16 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:400px;backgrou
 .ctab.active{color:var(--d2a-pulse);border-bottom-color:var(--d2a-pulse)}
 .ctab:hover{color:var(--d2a-pulse)}
 #chartsGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1.5rem}
-.ichart-container{background:var(--bg2);border:1px solid rgba(255,255,255,0.04);padding:1.2rem}
+.ichart-container{background:var(--bg2);border:1px solid rgba(255,255,255,0.04);padding:1.2rem;min-width:0;overflow:hidden}
 .ichart-container.charts-full-width{grid-column:1/-1}
-.ichart-header{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:.8rem}
-.ichart-title{font-family:var(--cond);font-size:.82rem;font-weight:700;letter-spacing:.05em;color:var(--white);margin-bottom:.15rem}
-.ichart-sub{font-family:var(--mono);font-size:.44rem;color:var(--gray-light);letter-spacing:.06em}
-.ichart-vals{text-align:right;flex-shrink:0}
-.ichart-main-val{font-family:var(--display);font-size:1.5rem;letter-spacing:.06em}
-.ichart-delta{font-family:var(--mono);font-size:.5rem;margin-top:.15rem}
-.ichart-body{position:relative}
-.ichart-svg-wrap{position:relative;height:130px;background:rgba(0,0,0,0.2)}
+.ichart-header{display:flex;justify-content:space-between;align-items:flex-start;gap:.6rem;margin-bottom:.8rem;min-width:0}
+.ichart-title{font-family:var(--cond);font-size:.82rem;font-weight:700;letter-spacing:.05em;color:var(--white);margin-bottom:.15rem;word-break:break-word;hyphens:auto;min-width:0}
+.ichart-sub{font-family:var(--mono);font-size:.44rem;color:var(--gray-light);letter-spacing:.06em;white-space:normal;word-break:break-word;line-height:1.4}
+.ichart-vals{text-align:right;flex-shrink:0;max-width:45%}
+.ichart-main-val{font-family:var(--display);font-size:clamp(1rem,4vw,1.5rem);letter-spacing:.06em;word-break:break-all}
+.ichart-delta{font-family:var(--mono);font-size:.44rem;margin-top:.15rem;white-space:normal;word-break:break-word;line-height:1.4}
+.ichart-body{position:relative;min-width:0}
+.ichart-svg-wrap{position:relative;height:130px;background:rgba(0,0,0,0.2);overflow:hidden}
 .crosshair{position:absolute;top:0;bottom:0;width:1px;background:rgba(204,34,34,0.35);pointer-events:none;display:none}
 .crosshair.show{display:block}
 .chart-tooltip{position:absolute;background:rgba(4,2,4,0.96);border:1px solid rgba(204,34,34,0.3);padding:6px 10px;font-family:var(--mono);font-size:.44rem;pointer-events:none;display:none;z-index:10;min-width:110px}
@@ -297,6 +297,8 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:400px;backgrou
 .tt-date{color:var(--d2a-pulse);letter-spacing:.1em;margin-bottom:4px;text-transform:uppercase}
 .tt-row{display:flex;justify-content:space-between;gap:8px;margin-top:2px}
 .tt-label{color:var(--gray-light)}.tt-val{font-weight:600}
+.ichart-left{min-width:0;flex:1 1 0;overflow:hidden}
+.ichart-narrative{font-family:var(--mono);font-size:.54rem;color:var(--gray-light);line-height:1.55;margin-top:.6rem;letter-spacing:.02em;border-left:2px solid rgba(204,34,34,0.25);padding-left:.8rem;word-break:break-word;overflow-wrap:break-word}
 .ichart-legend{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.6rem}
 .ileg{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.44rem;color:var(--gray-light);cursor:pointer;padding:2px 6px;border:1px solid rgba(255,255,255,0.04)}
 .ileg-dot{width:8px;height:3px;border-radius:1px}
@@ -415,6 +417,13 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:400px;backgrou
   #chartsGrid{grid-template-columns:1fr}
   .delta12-grid{grid-template-columns:repeat(2,1fr)}
   .section.vis .sem-card,.section.vis .delta12-grid .d12{animation:wr-up .4s ease both}
+  .ichart-container{padding:.85rem}
+  .ichart-header{flex-direction:column;gap:.4rem}
+  .ichart-vals{text-align:left;max-width:100%}
+  .ichart-main-val{font-size:clamp(1.1rem,6vw,1.6rem)}
+  .ichart-delta{font-size:.44rem;white-space:normal}
+  .ichart-sub{white-space:normal;font-size:.42rem}
+  .ichart-narrative{font-size:.48rem}
 }
 
 /* Animate on scroll */
@@ -1570,7 +1579,7 @@ function buildChart(c){
   const w=document.createElement('div');w.className='ichart-container'+(c.wide?' charts-full-width':'');w.dataset.cat=c.cat;
   const av=c.datasets.flatMap(d=>d.values.filter(v=>v!==null));const mn=Math.min(...av),mx=Math.max(...av);const r=mx-mn||1;const p=r*.12;
   const lo=mn-p,hi=mx+p,sp=hi-lo;const n=c.datasets[0].values.length;const f=v=>v===null?'—':Math.abs(v)>1000?v.toFixed(0):v.toFixed(2);
-  w.innerHTML=`<div class="ichart-header"><div><div class="ichart-title">${c.title}</div><div class="ichart-sub">${c.sub}</div></div><div class="ichart-vals"><div class="ichart-main-val" style="color:${c.mainColor}">${c.mainVal}</div><div class="ichart-delta" style="color:${c.deltaColor}">${c.delta}</div></div></div><div class="ichart-body"><div class="ichart-svg-wrap" id="sw_${c.id}"><div class="crosshair" id="cr_${c.id}"></div><div class="chart-tooltip" id="tp_${c.id}"></div></div>${c.narrative?`<div style="font-family:var(--mono);font-size:.54rem;color:var(--gray-light);line-height:1.55;margin-top:.6rem;letter-spacing:.02em;border-left:2px solid rgba(204,34,34,0.25);padding-left:.8rem">${c.narrative}</div>`:''}</div><div class="ichart-legend" id="lg_${c.id}"></div>`;
+  w.innerHTML=`<div class="ichart-header"><div class="ichart-left"><div class="ichart-title">${c.title}</div><div class="ichart-sub">${c.sub}</div></div><div class="ichart-vals"><div class="ichart-main-val" style="color:${c.mainColor}">${c.mainVal}</div><div class="ichart-delta" style="color:${c.deltaColor}">${c.delta}</div></div></div><div class="ichart-body"><div class="ichart-svg-wrap" id="sw_${c.id}"><div class="crosshair" id="cr_${c.id}"></div><div class="chart-tooltip" id="tp_${c.id}"></div></div>${c.narrative?`<div class="ichart-narrative">${c.narrative}</div>`:''}</div><div class="ichart-legend" id="lg_${c.id}"></div>`;
   setTimeout(()=>{
     const le=document.getElementById('lg_'+c.id);
     c.datasets.forEach((d,i)=>{const it=document.createElement('div');it.className='ileg';it.innerHTML=`<div class="ileg-dot" style="background:${d.color}"></div><span>${d.label}</span>`;it.addEventListener('click',()=>{it.classList.toggle('off');document.querySelectorAll(`#sw_${c.id} .ds-${i}`).forEach(p=>p.style.opacity=it.classList.contains('off')?'0':'1')});le.appendChild(it)});
